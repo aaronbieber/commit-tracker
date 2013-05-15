@@ -25,3 +25,58 @@ Add the current file to the commit list.
 
 `<leader>ls`  
 Show the current commit list.
+
+## Using the Powerline segment
+One of the best things about commit-tracker is using Powerline to see if your 
+current file is in the commit list and which commit list you're working with. 
+Since Powerline moved to Python it has become slightly more complex to make 
+this work, but fortunately for you I have done most of the hard work.
+
+You will need to do two things:
+
+1.	Update your Powerline local config file to include the path to the 
+	commit-tracker segment module so that it can be found when Python attempts 
+	to load it.
+2.	Update your Powerline vim theme to place the segment in your status line 
+	somewhere.
+
+Powerline configs are now generally stored in `~/.config/powerline/`, although 
+this may vary by OS, so I suggest consulting the Powerline documentation.  
+First, edit your `config.json` and add this bit:
+
+```json
+{
+	"common": {
+		"paths": ["~/.vim/bundle/commit-tracker/segment"]
+	}
+}
+```
+
+You should already have a "common" section and a bunch of other stuff is going 
+to be in there, but what you need is the "paths" key, whose value is an array 
+of include paths. One of the paths should be the path to the "segment" 
+directory in the commit-tracker distribution. My example above assumes that 
+you're using Pathogen and use the common "bundle" directory for your various 
+scripts, but adjust as necessary.
+
+Next, place the actual segment into your status line. Edit 
+`~/.config/powerline/themes/vim/default.json`, or whichever theme you are using 
+in vim. In one of your "segments" sections, add this (I have trimmed it down to 
+only my segment for demonstration purposes):
+
+```json
+{
+	"segments": {
+		"left": [
+			{
+				"module": "commit-tracker.commit-tracker",
+				"name": "commit-status",
+				"highlight_group": ["background"]
+			}
+		]
+	}
+}
+```
+
+That's it! You'll know if it's working because Vim will start and (hopefully) 
+not error continuously until you `killall vim`.
