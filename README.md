@@ -20,7 +20,8 @@ compatible with the new Python-based Powerline distribution.
 The plugin exposes mappings, of course, which all begin with `L`, short for 
 "list" (as in "the commit list"). Those are:
 
-`<leader>la`
-:   Add the current file to the commit list.
-`<leader>ls`
-:   Show the current commit list.
+`<leader>la`  
+Add the current file to the commit list.
+
+`<leader>ls`  
+Show the current commit list.
