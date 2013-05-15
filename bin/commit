@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Poor man's command broker. This works like the "git" command; it receives
+# a command name and a list of arguments and if there is a script named
+# "commit-<your command>", it executes it and passes along the arguments.
+
+if [ -e "$1" ] || [ "$1" == "help" ]; then
+    echo "Usage: commit COMMAND ARG1 [ARG2 ...]"
+    echo ""
+    echo "Commands:"
+    echo "    compare COMMITFILE"
+    echo "        Diff the local copy against the remote copy of each file in COMMITFILE and report"
+    echo "        on whether they are different."
+    echo "    makediff COMMITFILE"
+    echo "        Generate a unified diff of all of the files listed in COMMITFILE and save it to"
+    echo "        the configured location with the same filename as COMMITFILE (changing the .commit"
+    echo "        extension to .diff)."
+	echo "    show COMMITFILE"
+	echo "        List the files in COMMITFILE and display whether those files exist in the local"
+    echo "        and remote locations."
+    echo "    showdiff COMMITFILE"
+    echo "        Display a unified diff of all of the files listed in COMMITFILE."
+	echo "    status COMMITFILE"
+	echo "        Show the SVN status of each file in COMMITFILE."
+    echo "    help"
+    echo "        This message."
+    exit 0
+fi
+
+COMMIT_TOOLS_BASE=`dirname $0`
+COMMAND="$1"
+shift
+
+if [ -f "$COMMIT_TOOLS_BASE/commit-$COMMAND" ]; then
+    FULL_COMMAND="$COMMIT_TOOLS_BASE/commit-$COMMAND"
+    $FULL_COMMAND "$@"
+else
+    echo "Unknown commit command: $COMMAND."
+    echo "Maybe try \"commit help\"."
+    exit 1
+fi
+
+# vim: set expandtab ts=4 sw=4 :

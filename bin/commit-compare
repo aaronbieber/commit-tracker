@@ -1,0 +1,33 @@
+#!/bin/bash
+
+source ansi-tools.sh
+
+if [ -e "$1" ]; then
+    if [ ! -f "$1" ]; then
+        echo "Your commit file does not appear to exist."
+        exit 1
+    fi
+else
+    echo "You must specify a commit file."
+    exit 1
+fi
+
+COMMIT="$1"
+
+for file in `cat $COMMIT`; do
+    LOCAL_FILE="$file"
+    REMOTE_FILE="/home/abieber/p/${file##/home/abieber/svn/}"
+
+    # Diff very quietly.
+    diff -q "$file" "$REMOTE_FILE" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -en "$green"
+        echo -n "Identical "
+        reset
+    elif [ $? -eq 1 ]; then
+        echo -en "$red"
+        echo -n "Different "
+        reset
+    fi
+    echo "$file"
+done

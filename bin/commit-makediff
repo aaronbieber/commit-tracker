@@ -1,0 +1,62 @@
+#!/bin/bash
+
+source ansi-tools.sh
+
+if [ -e "$1" ]; then
+	if [ ! -f "$1" ]; then
+		echo "Your commit file does not appear to exist."
+		exit 1
+	fi
+else
+	echo "You must specify a commit file."
+	exit 1
+fi
+
+COMMIT="$1"
+COMMIT_FILENAME=${COMMIT##*/}
+COMMIT_BASENAME=${COMMIT_FILENAME%%.*}
+DIFF_FILENAME="$COMMIT_BASENAME.diff"
+
+# Say what we are going to do.
+echo -n "Quick validation... "
+ERRORS=0
+
+# Check for trailing whitespace because I hate it.
+for file in `cat $COMMIT | grep '\(php\|css\|js\)$'`; do
+    WHITESPACE=`cat "$file" | grep ' $' | wc -l`
+    if [ "$WHITESPACE" -gt 0 ]; then
+        if [ "$ERRORS" -eq 0 ]; then
+            echo -e $red"Errors found."
+            reset
+        fi
+        echo -e "  * "$yellow"You have trailing whitespace in ${file##*/}!"
+        let ERRORS++
+    fi
+    reset
+
+	LEADINGTABS=`cat "$file" | grep -P '^[ ]*\t' | wc -l`
+	if [ "$LEADINGTABS" -gt 0 ]; then
+		if [ "$ERRORS" -eq 0 ]; then
+			echo -e $red"Errors found."
+			reset
+		fi
+		echo -e "  * "$yellow"You have leading tabs in ${file##*/}!"
+		let ERRORS++
+	fi
+	reset
+done
+
+if [ "$ERRORS" -eq 0 ]; then
+    echo -e $green"Good to go."
+    reset
+fi
+
+echo "Generating diff:"
+echo "    From: $COMMIT_FILENAME"
+echo "    Into: ~/u/diffs/$DIFF_FILENAME"
+
+cat "$1" | \
+	grep '\(php\|css\|js\)$' | \
+	xargs svn diff | \
+	sed 's/\(+++\|---\) \/home\/abieber\/svn\/[^\/]*\//\1 /' > \
+	~/u/diffs/$DIFF_FILENAME

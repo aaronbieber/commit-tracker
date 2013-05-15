@@ -1,0 +1,21 @@
+#!/bin/bash
+
+source ansi-tools.sh
+
+if [ -e "$1" ]; then
+    if [ ! -f "$1" ]; then
+        echo "Your commit file does not appear to exist."
+        exit 1
+    fi
+else
+    echo "You must specify a commit file."
+    exit 1
+fi
+
+COMMIT="$1"
+
+for file in `cat $COMMIT`; do
+    svn-color.py status "$file"
+done
+
+# vim: set expandtab tw=4 sw=4 :
