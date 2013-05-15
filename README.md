@@ -16,7 +16,7 @@ with.
 There is a Powerline segment available that takes this to the next level, 
 compatible with the new Python-based Powerline distribution.
 
-# How does it work?
+## How does it work?
 The plugin exposes mappings, of course, which all begin with `L`, short for 
 "list" (as in "the commit list"). Those are:
 
