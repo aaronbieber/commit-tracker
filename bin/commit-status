@@ -15,7 +15,21 @@ fi
 COMMIT="$1"
 
 for file in `cat $COMMIT`; do
-    svn-color.py status "$file"
+    STATUS=`svn status "$file"`
+    if [[ "$STATUS" =~ ^M ]]; then
+        echo -e "$yellow$STATUS"
+    fi
+    if [[ "$STATUS" =~ ^A ]]; then
+        echo -e "$green$STATUS"
+    fi
+    if [[ "$STATUS" =~ ^D ]]; then
+        echo -e "$red$STATUS"
+    fi
+    if [ "$STATUS" == "" ]; then
+        echo "        $file"
+    fi
+    #svn-color.py status "$file"
+    reset
 done
 
-# vim: set expandtab tw=4 sw=4 :
+# vim: set expandtab ts=4 sw=4 :
