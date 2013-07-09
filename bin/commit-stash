@@ -1,0 +1,35 @@
+#!/bin/bash
+
+source ansi-tools.sh
+
+# Check for the COMMIT_STASH_DIR variable, which tells us where to stash things.
+if [[ -z "$COMMIT_STASH_DIR" ]]; then
+    echo "Please set \$COMMIT_STASH_DIR to the base directory in which to store stashes."
+    exit 1
+fi
+
+# If no commit list is specified, see if we're in an SVN directory.
+if [ "$1" == "" ]; then
+    echo "You must supply a commit file OR run commit-stash in an SVN working directory and supply a stash name."
+    exit 1
+else
+    # Is the argument a file?
+    if [[ "$1" =~ \.commit$ ]] && [ -e "$1" ] && [ -f "$1" ]; then
+        COMMIT_FILENAME=${1##*/}
+        COMMIT_BASENAME=${COMMIT_FILENAME%%.commit}
+        STASH_PATH="$COMMIT_STASH_DIR/$COMMIT_BASENAME"
+        COMMIT_STASH=$(readlink -f "$STASH_PATH")
+        echo "Writing to $COMMIT_STASH/"
+        true
+    else
+        `ls -Ad .svn > /dev/null 2>&1`
+        if [ $? -eq 0 ]; then
+            echo "We are in an SVN directory!"
+        else
+            echo "You have supplied a stash name, but are not in an SVN working directory."
+            exit 1
+        fi
+    fi
+fi
+
+# vim: set expandtab ts=4 sw=4 :
