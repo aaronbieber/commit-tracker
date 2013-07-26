@@ -18,32 +18,38 @@ COMMIT_BASENAME=${COMMIT_FILENAME%%.*}
 DIFF_FILENAME="$COMMIT_BASENAME.diff"
 
 # Say what we are going to do.
-echo -n "Quick validation... "
+echo "Quick validation... "
 ERRORS=0
+
+error_found() {
+	if [ "$ERRORS" -eq 0 ]; then
+		echo -e $red"Errors found."
+		reset
+	fi
+}
 
 # Check for trailing whitespace because I hate it.
 for file in `cat $COMMIT | grep '\(php\|css\|js\)$'`; do
-    WHITESPACE=`cat "$file" | grep ' $' | wc -l`
-    if [ "$WHITESPACE" -gt 0 ]; then
-        if [ "$ERRORS" -eq 0 ]; then
-            echo -e $red"Errors found."
-            reset
-        fi
-        echo -e "  * "$yellow"You have trailing whitespace in ${file##*/}!"
-        let ERRORS++
-    fi
-    reset
-
-	LEADINGTABS=`cat "$file" | grep -P '^[ ]*\t' | wc -l`
-	if [ "$LEADINGTABS" -gt 0 ]; then
-		if [ "$ERRORS" -eq 0 ]; then
-			echo -e $red"Errors found."
-			reset
+	if [ ! -f "$file" ]; then
+		echo -e "  * "$yellow"${file} does not exist. Make sure you meant to delete it."
+		reset
+	else
+		WHITESPACE=`cat "$file" | grep ' $' | wc -l`
+		if [ "$WHITESPACE" -gt 0 ]; then
+			error_found
+			echo -e "  * "$yellow"You have trailing whitespace in ${file##*/}!"
+			let ERRORS++
 		fi
-		echo -e "  * "$yellow"You have leading tabs in ${file##*/}!"
-		let ERRORS++
+		reset
+
+		LEADINGTABS=`cat "$file" | grep -P '^[ ]*\t' | wc -l`
+		if [ "$LEADINGTABS" -gt 0 ]; then
+			error_found
+			echo -e "  * "$yellow"You have leading tabs in ${file##*/}!"
+			let ERRORS++
+		fi
+		reset
 	fi
-	reset
 done
 
 if [ "$ERRORS" -eq 0 ]; then
