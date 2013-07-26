@@ -25,6 +25,9 @@ for file in `cat $COMMIT`; do
     if [[ "$STATUS" =~ ^D ]]; then
         echo -e "$red$STATUS"
     fi
+    if [[ "$STATUS" =~ ^\? ]]; then
+        echo -e "$STATUS"
+    fi
     if [ "$STATUS" == "" ]; then
         echo "        $file"
     fi
