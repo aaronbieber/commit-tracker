@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ -e "$1" ]; then
+    if [ ! -f "$1" ]; then
+        echo "Your commit file does not appear to exist."
+        exit 1
+    fi
+else
+    echo "You must specify a commit file."
+    exit 1
+fi
+
+COMMIT="$1"
+
+if [[ -z "$EDITOR" ]]; then
+	echo "commit edit uses your configured editor. Please ensure that the \$EDITOR environment variable is set.";
+	exit 1
+fi
+
+$EDITOR `cat $COMMIT`
