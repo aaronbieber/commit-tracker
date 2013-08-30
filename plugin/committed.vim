@@ -31,10 +31,10 @@ let s:optionOverrides = {}
 " Function: BCFSetCommitFileName()
 " Ask the user to enter a filename for this commit file and see if it exists
 " on disk. If not, set it.
-function! s:BCFSetCommitFileName(...)
+function! s:set_commit_filename(...)
 	let nochange = (a:0 > 0 && a:1 =~ "nochange") ? 1 : 0
 
-	let path = BCFGetOption("BCFCommitFilePath", "C:/WINDOWS/Temp/")
+	let path = s:get_option("BCFCommitFilePath", "C:/WINDOWS/Temp/")
 	let filename = input("Enter a name for your commit file: ")
 	echo "\n"
 	if(len(filename) && filereadable(path.filename.".commit"))
@@ -68,45 +68,45 @@ function! s:BCFSetCommitFileName(...)
 	endif
 
 	if(exists("g:BCFCommitFileName") && len(g:BCFCommitFileName))
-		call s:BCFActivateBuffer()
+		call s:activate_buffer()
 	endif
 endfunction
 
-" Function: s:BCFUnsetCommitFileName()
+" Function: s:unset_commit_filename()
 " Remove the commit file definition for this Vim instance.
-function! s:BCFUnsetCommitFileName()
+function! s:unset_commit_filename()
 	unlet g:BCFCommitFileNameBase
 	unlet g:BCFCommitFileName
 endfunction
 
-" Function: s:BCFPathFormat(path)
+" Function: s:path_format(path)
 " Format a path returned by expand() into the format we want in our commit
 " file. The user might want to customize this behavior. I don't know how to do
 " that elegantly.
-function! s:BCFPathFormat(path)
+function! s:path_format(path)
 	let thefile = a:path
 	let thefile = substitute(thefile, "\\", "/", "g")
 	let thefile = substitute(thefile, "J:", "/cygdrive/j", "")
 	return thefile
 endfunction
 
-" Function: s:BCFPathUnFormat(path)
+" Function: s:path_un_format(path)
 " Reverse path formatting from posix back to Windows to be able to do Windows
 " things with it.
-function! s:BCFPathUnFormat(path)
+function! s:path_un_format(path)
 	let thefile = a:path
 	let thefile = substitute(thefile, "/cygdrive/j", "J:", "")
 	let thefile = substitute(thefile, "/", "\\", "g")
 	return thefile
 endfunction
 
-" Function: s:BCFAddFile()
+" Function: committed#add_file()
 " Add a file to the commit file list.
-function! s:BCFAddFile()
-	let path = BCFGetOption("BCFCommitFilePath", "C:/WINDOWS/Temp/")
+function! committed#add_file()
+	let path = s:get_option("BCFCommitFilePath", "C:/WINDOWS/Temp/")
 	" If the filename isn't defined yet, ask for a name.
 	if(!exists("g:BCFCommitFileName"))
-		call s:BCFSetCommitFileName()
+		call s:set_commit_filename()
 	endif
 
 	" If the filename still isn't defined, one was not provided or the user
@@ -117,11 +117,11 @@ function! s:BCFAddFile()
 		return
 	endif
 
-	let thisfile = s:BCFPathFormat(expand("%:p"))
+	let thisfile = s:path_format(expand("%:p"))
 	let thisline = thisfile
 
 	if(filereadable(path . g:BCFCommitFileName))
-		if(s:BCFExistsInCommitList(thisfile))
+		if(s:exists_in_commit_list(thisfile))
 			let b:BCFListContainsThisBuffer = 1
 			echohl WarningMsg|echo "This file already exists in the commit list!"|echohl None
 			return
@@ -134,7 +134,7 @@ function! s:BCFAddFile()
 		call writefile([thisline], path.g:BCFCommitFileName)
 	else
 		echohl WarningMsg|echo "Your commit file path is not writable."|echohl None
-		call s:BCFUnsetCommitFileName()
+		call s:unset_commit_filename()
 		return
 	endif
 
@@ -142,8 +142,8 @@ function! s:BCFAddFile()
 	echo "Added ".thisfile." to the ".g:BCFCommitFileName." file."
 endfunction
 
-function! s:BCFExistsInCommitList(filename)
-	let path = BCFGetOption("BCFCommitFilePath", "C:/WINDOWS/Temp/")
+function! s:exists_in_commit_list(filename)
+	let path = s:get_option("BCFCommitFilePath", "C:/WINDOWS/Temp/")
 	if(exists("g:BCFCommitFileName"))
 		if(filereadable(path.g:BCFCommitFileName))
 			let commits = readfile(path.g:BCFCommitFileName)
@@ -167,9 +167,9 @@ endfunction
 " Function: BCFShowCommitFile()
 " Open the current commit file (if there is one) in a new buffer, splitting
 " below by default.
-function! s:BCFShowCommitFile()
+function! s:show_commit_file()
 	if(exists("g:BCFCommitFileName"))
-		let path = BCFGetOption("BCFCommitFilePath", "C:/WINDOWS/Temp/")
+		let path = s:get_option("BCFCommitFilePath", "C:/WINDOWS/Temp/")
 		exec "bot split ".path.g:BCFCommitFileName
 		let &filetype = "BCFCommitFile"
 	else
@@ -177,14 +177,14 @@ function! s:BCFShowCommitFile()
 	endif
 endfunction
 
-" Function: s:BCFOpenFile()
+" Function: s:open_file()
 " Split the window and open the filename under the cursor in the commit file.
 " I really should have a 'commit' file type, but I haven't gotten to that yet.
-function! s:BCFOpenFile()
+function! s:open_file()
 	let filename = expand("<cfile>")
 	echo filename
 	if(len(filename))
-		let filename = s:BCFPathUnFormat(filename)
+		let filename = s:path_un_format(filename)
 		echo filename
 		if(filereadable(filename))
 			exec "split ".filename
@@ -192,10 +192,10 @@ function! s:BCFOpenFile()
 	endif
 endfunction
 
-" Function: BCFGetOption(name, default)
+" Function: s:get_option(name, default)
 " Grab a user-specified option to override the default provided.  Options are
 " searched in the window, buffer, then global spaces.
-function! BCFGetOption(name, default)
+function! s:get_option(name, default)
 	if has_key(s:optionOverrides, a:name) && len(s:optionOverrides[a:name]) > 0
 		return s:optionOverrides[a:name][-1]
 	elseif exists('w:' . a:name)
@@ -209,7 +209,7 @@ function! BCFGetOption(name, default)
 	endif
 endfunction
 
-function! BCFStatusLineElement()
+function! committed#status_line_filename()
 	if exists("g:BCFCommitFileNameBase")
 		return g:BCFCommitFileNameBase
 	else
@@ -217,7 +217,7 @@ function! BCFStatusLineElement()
 	endif
 endfunction
 
-function! BCFStatusLineElementFileStatus()
+function! committed#status_line_symbol()
 	if(exists("g:BCFCommitFileNameBase"))
 		if(exists("b:BCFListContainsThisBuffer") && b:BCFListContainsThisBuffer)
 			return "✔"
@@ -229,18 +229,18 @@ function! BCFStatusLineElementFileStatus()
 	return ""
 endfunction
 
-function! s:BCFActivateBuffer()
+function! s:activate_buffer()
 	if(exists("g:BCFCommitFileName") && len(g:BCFCommitFileName))
 		if(len(expand("%:p")))
-			let thisfile = s:BCFPathFormat(expand("%:p"))
+			let thisfile = s:path_format(expand("%:p"))
 			if(len(thisfile))
-				let b:BCFListContainsThisBuffer = s:BCFExistsInCommitList(thisfile)
+				let b:BCFListContainsThisBuffer = s:exists_in_commit_list(thisfile)
 			endif
 		endif
 	endif
 endfunction
 
-function! s:BCFCopyCommitFileName()
+function! s:copy_commit_filename()
 	call setreg('*', g:BCFCommitFileNameBase)
 	echo "\"".g:BCFCommitFileNameBase."\" copied to the clipboard."
 endfunction
@@ -249,27 +249,19 @@ endfunction
 "	silent! bufdo! \la
 "endfunction
 
-com! -nargs=0 BCFAddAllFiles call s:BCFAddAllFiles()
-com! -nargs=0 BCFAddFile call s:BCFAddFile()
-com! -nargs=0 BCFShowCommitFile call s:BCFShowCommitFile()
-com! -nargs=0 BCFOpenFile call s:BCFOpenFile()
-com! -nargs=0 BCFSetCommitFileName call s:BCFSetCommitFileName("nochange")
-com! -nargs=0 BCFUnsetCommitFileName call s:BCFUnsetCommitFileName()
-com! -nargs=0 BCFCopyCommitFileName call s:BCFCopyCommitFileName()
-
-nnoremap <silent> <Plug>BCFAddAllFiles :BCFAddAllFiles<CR>
-nnoremap <silent> <Plug>BCFAddFile :BCFAddFile<CR>
-nnoremap <silent> <Plug>BCFShowCommitFile :BCFShowCommitFile<CR>
-nnoremap <silent> <Plug>BCFOpenFile :BCFOpenFile<CR>
-nnoremap <silent> <Plug>BCFSetCommitFileName :BCFSetCommitFileName<CR>
-nnoremap <silent> <Plug>BCFUnsetCommitFileName :BCFUnsetCommitFileName<CR>
-nnoremap <silent> <Plug>BCFCopyCommitFileName :BCFCopyCommitFileName<CR>
+nnoremap <silent> <Plug>committed#add_all_files       :<SID>committed#add_all_files()<CR>
+nnoremap <silent> <Plug>committed#add_file            :<SID>committed#add_file()<CR>
+nnoremap <silent> <Plug>committed#showCommitFile      :BCFShowCommitFile<CR>
+nnoremap <silent> <Plug>committed#openFile            :BCFOpenFile<CR>
+nnoremap <silent> <Plug>committed#setCommitFileName   :BCFSetCommitFileName<CR>
+nnoremap <silent> <Plug>committed#unsetCommitFileName :BCFUnsetCommitFileName<CR>
+nnoremap <silent> <Plug>committed#copyCommitFileName  :BCFCopyCommitFileName<CR>
 
 if !hasmapto('<Plug>BCFAddAllFiles')
 	nmap <unique> <Leader>lA <Plug>BCFAddAllFiles
 endif
-if !hasmapto('<Plug>BCFAddFile')
-	nmap <unique> <Leader>la <Plug>BCFAddFile
+if !hasmapto('<Plug>committed#add_file')
+	nmap <unique> <Leader>la <Plug>committed#add_file
 endif
 if !hasmapto('<Plug>BCFShowCommitFile')
 	nmap <unique> <Leader>ls <Plug>BCFShowCommitFile
@@ -287,4 +279,4 @@ if !hasmapto('<Plug>BCFCopyCommitFileName')
 	nmap <unique> <Leader>lc <Plug>BCFCopyCommitFileName
 endif
 
-autocmd BufEnter,BufWinEnter,WinEnter,TabEnter * call s:BCFActivateBuffer()
+autocmd BufEnter,BufWinEnter,WinEnter,TabEnter * call s:activate_buffer()
