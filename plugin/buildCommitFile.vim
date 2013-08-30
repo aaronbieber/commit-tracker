@@ -14,16 +14,18 @@
 "								C:/WINDOWS/Temp/
 "								Make sure you have a trailing slash.
 
-if exists('loaded_buildCommitFile')
+" Don't let it get loaded twice.
+if exists('g:loaded_buildCommitFile') || &cp
 	finish
 endif
-let loaded_buildCommitFile = 1
+let g:loaded_buildCommitFile = 1
 
+" Ensure that the version is high enough.
 if v:version < 700
 	echohl WarningMsg|echomsg "Build Commit File requires at least VIM 7.0."|echohl None
 endif
 
-" temporary values of overridden configuration variables
+" Temporary values of overridden configuration variables.
 let s:optionOverrides = {}
 
 " Function: BCFSetCommitFileName()
@@ -34,7 +36,7 @@ function! s:BCFSetCommitFileName(...)
 
 	let path = BCFGetOption("BCFCommitFilePath", "C:/WINDOWS/Temp/")
 	let filename = input("Enter a name for your commit file: ")
-	echo ""
+	echo "\n"
 	if(len(filename) && filereadable(path.filename.".commit"))
 		" File already exists!
 		if !nochange
@@ -106,6 +108,7 @@ function! s:BCFAddFile()
 	if(!exists("g:BCFCommitFileName"))
 		call s:BCFSetCommitFileName()
 	endif
+
 	" If the filename still isn't defined, one was not provided or the user
 	" provided a name that already existed and declined to overwrite that
 	" file.
@@ -113,9 +116,11 @@ function! s:BCFAddFile()
 		echohl WarningMsg|echo "You must set a filename before you can continue."|echohl None
 		return
 	endif
+
 	let thisfile = s:BCFPathFormat(expand("%:p"))
 	let thisline = thisfile
-	if(filereadable(path.g:BCFCommitFileName))
+
+	if(filereadable(path . g:BCFCommitFileName))
 		if(s:BCFExistsInCommitList(thisfile))
 			let b:BCFListContainsThisBuffer = 1
 			echohl WarningMsg|echo "This file already exists in the commit list!"|echohl None
@@ -125,8 +130,12 @@ function! s:BCFAddFile()
 		let commits = readfile(path.g:BCFCommitFileName)
 		let commits = commits + [thisline]
 		call writefile(commits, path.g:BCFCommitFileName)
-	else
+	elseif(filewritable(path))
 		call writefile([thisline], path.g:BCFCommitFileName)
+	else
+		echohl WarningMsg|echo "Your commit file path is not writable."|echohl None
+		call s:BCFUnsetCommitFileName()
+		return
 	endif
 
 	let b:BCFListContainsThisBuffer = 1
