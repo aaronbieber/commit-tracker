@@ -1,10 +1,10 @@
-# Commit Tracker
+# Committed
 A Vim plugin to track files to commit for use with "monolithic" changeset 
 VCSes like Subversion and Mercurial.
 
 What do I mean by "monolithic"? I suppose what I mean is "not git," meaning 
-that the VCS itself doesn't have the "staging area" (or "index") functionality 
-of git, so if you want to commit selectively you have to list the files on the 
+that the VCS doesn't have the "staging area" (or "index") functionality of 
+git, so if you want to commit selectively you have to list the files on the 
 command line or supply them in some explicit manner.
 
 This plugin exposes functions to make it drop-dead simple to add and remove 
@@ -13,8 +13,13 @@ listing their full paths. It will let you know if a file you are editing is
 already in the commit list and remind you which commit list you're working 
 with.
 
+It also provides a small suite of bash scripts for performing (mostly SVN) 
+operations using commit files.
+
 There is a Powerline segment available that takes this to the next level, 
-compatible with the new Python-based Powerline distribution.
+compatible with the new Python-based Powerline distribution, and integrating 
+status line elements into lightweight status line plug-ins like Airline and 
+Lightline is easy as pie.
 
 ## How does it work?
 The plugin exposes mappings, of course, which all begin with `L`, short for 
