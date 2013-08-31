@@ -4,15 +4,16 @@
 "
 " Version:		1.0a
 " Maintainer:	Aaron Bieber <aaron@aaronbieber.com>
-" License:		??
+" License:		The same as Vim itself.
 "
-" Copyright (c) 2008 Aaron Bieber
+" Copyright (c) 2008-2013 Aaron Bieber
 "
 " Configuration options:
-" 	g:BCFCommitFilePath			The path on disk to a location where commit
+" 	g:committed_file_path		The path on disk to a location where commit
 " 								files should be created/saved. Something like
-"								C:/WINDOWS/Temp/
+"								~/commits/ or ~/commits/
 "								Make sure you have a trailing slash.
+"								@todo Fix this.
 
 " Don't let it get loaded twice.
 if exists('g:loaded_buildCommitFile') || &cp
@@ -34,7 +35,7 @@ let s:optionOverrides = {}
 function! s:set_commit_filename(...)
 	let nochange = (a:0 > 0 && a:1 =~ "nochange") ? 1 : 0
 
-	let path = s:get_option("BCFCommitFilePath", "C:/WINDOWS/Temp/")
+	let path = s:get_option("committed_file_path", "~/commits/")
 	let filename = input("Enter a name for your commit file: ")
 	echo "\n"
 	if(len(filename) && filereadable(path.filename.".commit"))
@@ -52,22 +53,22 @@ function! s:set_commit_filename(...)
 
 		if(ans == "y" || ans == "Y")
 			call writefile([], path.filename.".commit")
-			let g:BCFCommitFileNameBase = filename
-			let g:BCFCommitFileName = filename.".commit"
+			let g:committed_filename_base = filename
+			let g:committed_filename = filename.".commit"
 		elseif(ans == "a" || ans == "A")
-			let g:BCFCommitFileNameBase = filename
-			let g:BCFCommitFileName = filename.".commit"
+			let g:committed_filename_base = filename
+			let g:committed_filename = filename.".commit"
 		endif
 	elseif(len(filename))
 		if !nochange
-			let g:BCFCommitFileNameBase = filename
-			let g:BCFCommitFileName = filename.".commit"
+			let g:committed_filename_base = filename
+			let g:committed_filename = filename.".commit"
 		else
 			echohl WarningMsg|echomsg "When selecting an existing commit file, the file must exist."|echohl None
 		endif
 	endif
 
-	if(exists("g:BCFCommitFileName") && len(g:BCFCommitFileName))
+	if(exists("g:committed_filename") && len(g:committed_filename))
 		call s:activate_buffer()
 	endif
 endfunction
@@ -75,8 +76,8 @@ endfunction
 " Function: s:unset_commit_filename()
 " Remove the commit file definition for this Vim instance.
 function! s:unset_commit_filename()
-	unlet g:BCFCommitFileNameBase
-	unlet g:BCFCommitFileName
+	unlet g:committed_filename_base
+	unlet g:committed_filename
 endfunction
 
 " Function: s:path_format(path)
@@ -100,19 +101,19 @@ function! s:path_un_format(path)
 	return thefile
 endfunction
 
-" Function: committed#add_file()
+" Function: s:add_file()
 " Add a file to the commit file list.
-function! committed#add_file()
-	let path = s:get_option("BCFCommitFilePath", "C:/WINDOWS/Temp/")
+function! s:add_file()
+	let path = expand(s:get_option("committed_file_path", "~/commits/"))
 	" If the filename isn't defined yet, ask for a name.
-	if(!exists("g:BCFCommitFileName"))
+	if(!exists("g:committed_filename"))
 		call s:set_commit_filename()
 	endif
 
 	" If the filename still isn't defined, one was not provided or the user
 	" provided a name that already existed and declined to overwrite that
 	" file.
-	if(!exists("g:BCFCommitFileName"))
+	if(!exists("g:committed_filename"))
 		echohl WarningMsg|echo "You must set a filename before you can continue."|echohl None
 		return
 	endif
@@ -120,33 +121,33 @@ function! committed#add_file()
 	let thisfile = s:path_format(expand("%:p"))
 	let thisline = thisfile
 
-	if(filereadable(path . g:BCFCommitFileName))
+	if(filereadable(path . g:committed_filename))
 		if(s:exists_in_commit_list(thisfile))
-			let b:BCFListContainsThisBuffer = 1
+			let b:committed_list_contains_this_buffer = 1
 			echohl WarningMsg|echo "This file already exists in the commit list!"|echohl None
 			return
 		endif
 
-		let commits = readfile(path.g:BCFCommitFileName)
+		let commits = readfile(path.g:committed_filename)
 		let commits = commits + [thisline]
-		call writefile(commits, path.g:BCFCommitFileName)
+		call writefile(commits, path.g:committed_filename)
 	elseif(filewritable(path))
-		call writefile([thisline], path.g:BCFCommitFileName)
+		call writefile([thisline], path.g:committed_filename)
 	else
 		echohl WarningMsg|echo "Your commit file path is not writable."|echohl None
 		call s:unset_commit_filename()
 		return
 	endif
 
-	let b:BCFListContainsThisBuffer = 1
-	echo "Added ".thisfile." to the ".g:BCFCommitFileName." file."
+	let b:committed_list_contains_this_buffer = 1
+	echo "Added ".thisfile." to the ".g:committed_filename." file."
 endfunction
 
 function! s:exists_in_commit_list(filename)
-	let path = s:get_option("BCFCommitFilePath", "C:/WINDOWS/Temp/")
-	if(exists("g:BCFCommitFileName"))
-		if(filereadable(path.g:BCFCommitFileName))
-			let commits = readfile(path.g:BCFCommitFileName)
+	let path = s:get_option("committed_file_path", "~/commits/")
+	if(exists("g:committed_filename"))
+		if(filereadable(path . g:committed_filename))
+			let commits = readfile(path . g:committed_filename)
 			for line in commits
 				" If the commit line is entirely found within the buffer path,
 				" we presume that the buffer path's parent folder is included
@@ -168,9 +169,9 @@ endfunction
 " Open the current commit file (if there is one) in a new buffer, splitting
 " below by default.
 function! s:show_commit_file()
-	if(exists("g:BCFCommitFileName"))
-		let path = s:get_option("BCFCommitFilePath", "C:/WINDOWS/Temp/")
-		exec "bot split ".path.g:BCFCommitFileName
+	if(exists("g:committed_filename"))
+		let path = s:get_option("committed_file_path", "~/commits/")
+		exec "bot split ".path.g:committed_filename
 		let &filetype = "BCFCommitFile"
 	else
 		echohl WarningMsg|echo "There is no commit file set up in this Vim instance."|echohl None
@@ -210,16 +211,16 @@ function! s:get_option(name, default)
 endfunction
 
 function! committed#status_line_filename()
-	if exists("g:BCFCommitFileNameBase")
-		return g:BCFCommitFileNameBase
+	if exists("g:committed_filename_base")
+		return g:committed_filename_base
 	else
 		return ""
 	endif
 endfunction
 
 function! committed#status_line_symbol()
-	if(exists("g:BCFCommitFileNameBase"))
-		if(exists("b:BCFListContainsThisBuffer") && b:BCFListContainsThisBuffer)
+	if(exists("g:committed_filename_base"))
+		if(exists("b:committed_list_contains_this_buffer") && b:committed_list_contains_this_buffer)
 			return "✔"
 		else
 			return "✘"
@@ -230,53 +231,42 @@ function! committed#status_line_symbol()
 endfunction
 
 function! s:activate_buffer()
-	if(exists("g:BCFCommitFileName") && len(g:BCFCommitFileName))
+	if(exists("g:committed_filename") && len(g:committed_filename))
 		if(len(expand("%:p")))
 			let thisfile = s:path_format(expand("%:p"))
 			if(len(thisfile))
-				let b:BCFListContainsThisBuffer = s:exists_in_commit_list(thisfile)
+				let b:committed_list_contains_this_buffer = s:exists_in_commit_list(thisfile)
 			endif
 		endif
 	endif
 endfunction
 
 function! s:copy_commit_filename()
-	call setreg('*', g:BCFCommitFileNameBase)
-	echo "\"".g:BCFCommitFileNameBase."\" copied to the clipboard."
+	call setreg('*', g:committed_filename_base)
+	echo "\"".g:committed_filename_base."\" copied to the star register (default clipboard)."
 endfunction
 
+" There is definitely a better way to do this, so let's not for now.
 "function! s:BCFAddAllFiles()
-"	silent! bufdo! \la
+"	silent! bufdo! <Leader>la
 "endfunction
 
-nnoremap <silent> <Plug>committed#add_all_files       :<SID>committed#add_all_files()<CR>
-nnoremap <silent> <Plug>committed#add_file            :<SID>committed#add_file()<CR>
-nnoremap <silent> <Plug>committed#showCommitFile      :BCFShowCommitFile<CR>
-nnoremap <silent> <Plug>committed#openFile            :BCFOpenFile<CR>
-nnoremap <silent> <Plug>committed#setCommitFileName   :BCFSetCommitFileName<CR>
-nnoremap <silent> <Plug>committed#unsetCommitFileName :BCFUnsetCommitFileName<CR>
-nnoremap <silent> <Plug>committed#copyCommitFileName  :BCFCopyCommitFileName<CR>
+"nnoremap <silent> <Plug>CommittedAddAllFiles          :<SID>committed#add_all_files()<CR>
+nnoremap <silent> <Plug>CommittedAddFile              :call <SID>add_file()<CR>
+nnoremap <silent> <Plug>CommittedShowCommitFile       :call <SID>show_commit_file()<CR>
+nnoremap <silent> <Plug>CommittedOpenFile             :call <SID>open_file()<CR>
+nnoremap <silent> <Plug>CommittedSetCommitFileName    :call <SID>set_commit_filename()<CR>
+nnoremap <silent> <Plug>CommittedUnsetCommitFileName  :call <SID>unset_commit_filename()<CR>
+nnoremap <silent> <Plug>CommittedCopyCommitFileName   :call <SID>copy_commit_filename()<CR>
 
-if !hasmapto('<Plug>BCFAddAllFiles')
-	nmap <unique> <Leader>lA <Plug>BCFAddAllFiles
-endif
-if !hasmapto('<Plug>committed#add_file')
-	nmap <unique> <Leader>la <Plug>committed#add_file
-endif
-if !hasmapto('<Plug>BCFShowCommitFile')
-	nmap <unique> <Leader>ls <Plug>BCFShowCommitFile
-endif
-if !hasmapto('<Plug>BCFOpenFile')
-	nmap <unique> <Leader>lo <Plug>BCFOpenFile
-endif
-if !hasmapto('<Plug>BCFSetCommitFileName')
-	nmap <unique> <Leader>lg <Plug>BCFSetCommitFileName
-endif
-if !hasmapto('<Plug>BCFUnsetCommitFileName')
-	nmap <unique> <Leader>lu <Plug>BCFUnsetCommitFileName
-endif
-if !hasmapto('<Plug>BCFCopyCommitFileName')
-	nmap <unique> <Leader>lc <Plug>BCFCopyCommitFileName
+if !exists("g:committed_no_mappings") || ! g:committed_no_mappings
+	"nmap <unique> <Leader>lA <Plug>CommittedAddFile
+	nmap <unique> <Leader>la <Plug>CommittedAddFile
+	nmap <unique> <Leader>ls <Plug>CommittedShowCommitFile
+	nmap <unique> <Leader>lo <Plug>CommittedOpenFile
+	nmap <unique> <Leader>lg <Plug>CommittedSetCommitFileName
+	nmap <unique> <Leader>lu <Plug>CommittedUnsetCommitFileName
+	nmap <unique> <Leader>lc <Plug>CommittedCopyCommitFileName
 endif
 
 autocmd BufEnter,BufWinEnter,WinEnter,TabEnter * call s:activate_buffer()
