@@ -8,6 +8,11 @@
  Y88b  d88P Y88..88P.88  888  888.88  888  888.88 Y88b. Y88b. Y8b.    Y88b 888 
   'Y8888P'   'Y88P' 888  888  888.88  888  888.88  'Y888 'Y888 'Y8888  'Y88888 
 
+  Version 1.0b
+  Copyright (c) 2008-2013 Aaron Bieber
+  Distributed under the same license as Vim itself.
+  No warranty of suitability for any purpose, etc.; push requests welcome.
+
   1. Introduction ................................... |committed-introduction|
   2. Basics of Use .................................. |committed-basics|
   3. Configuration .................................. |committed-configuration|
