@@ -1,27 +1,49 @@
 
-  .d8888b.                                    d8b 888   888                888 
- d88P  Y88b                                   Y8P 888   888                888 
- 888    888                                       888   888                888 
- 888         .d88b. 88888b.d88b. 88888b.d88b. 888 888888.88888 .d88b.  .d88888 
- 888        d88''88b.88 '888 '88b.88 '888 '88b.88 888   888   d8P  Y8b.88' 888 
- 888    888 888  888.88  888  888.88  888  888.88 888   888   88888888.88  888 
- Y88b  d88P Y88..88P.88  888  888.88  888  888.88 Y88b. Y88b. Y8b.    Y88b 888 
-  'Y8888P'   'Y88P' 888  888  888.88  888  888.88  'Y888 'Y888 'Y8888  'Y88888 
+ .d8888b.				     d8b 888   888		  888 
+d88P  Y88b				     Y8P 888   888		  888 
+888    888					 888   888		  888 
+888	    .d88b. 88888b.d88b. 88888b.d88b. 888 888888.88888 .d88b.  .d88888 
+888	   d88''88b.88 '888 '88b.88 '888 '88b.88 888   888   d8P  Y8b.88' 888 
+888    888 888	888.88	888  888.88  888  888.88 888   888   88888888.88  888 
+Y88b  d88P Y88..88P.88	888  888.88  888  888.88 Y88b. Y88b. Y8b.    Y88b 888 
+ 'Y8888P'   'Y88P' 888	888  888.88  888  888.88  'Y888 'Y888 'Y8888  'Y88888 
 
-  Version 1.0b
-  Copyright (c) 2008-2013 Aaron Bieber
-  Distributed under the same license as Vim itself.
-  No warranty of suitability for any purpose, etc.; push requests welcome.
+Version 1.0b
+Copyright (c) 2008-2013 Aaron Bieber
+Distributed under the same license as Vim itself.
+No warranty of suitability for any purpose, etc.; push requests welcome.
 
-  1. Introduction ................................... |committed-introduction|
-  2. Basics of Use .................................. |committed-basics|
-  3. Configuration .................................. |committed-configuration|
+1. Introduction ................................... |committed-introduction|
+2. Basics of Use .................................. |committed-basics|
+3. Configuration .................................. |committed-configuration|
 
-===============================================================================
-Introduction                                           *committed-introduction*
+=============================================================================
+1. Introduction					*committed-introduction*
 
-===============================================================================
-Basics of Use                                                *committed-basics*
+=============================================================================
+2. Basics of Use				*committed-basics*
 
-===============================================================================
-Configuration                                         *committed-configuration*
+=============================================================================
+3. Configuration				*committed-configuration*
+
+There are a few configuration variables you can set to customize your 
+environment.
+
+g:committed_file_path
+						*g:committed_file_path*
+		Set this variable to the location where you would like your 
+		commit files to be saved. OS path expansion is supported (any 
+		token that Vim's expand() function understands), so ~/ and 
+		$HOME should work. The default is ~/commits/.
+
+g:committed_symbol_true
+						*g:committed_symbol_true*
+		This symbol will be returned by committed#status_line_symbol 
+		when the current file exists in the commit list.
+
+g:committed_symbol_false
+						*g:committed_symbol_false*
+		This symbol will be returned by committed#status_line_symbol 
+		when the current file does not exist in the commit list.
+
+vim:tw=78:ts=8:ft=help:norl:
