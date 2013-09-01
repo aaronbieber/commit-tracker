@@ -1,3 +1,5 @@
+*committed.txt* Track changesets without branching.
+
  .d8888b.                                    d8b 888   888                888
 d88P  Y88b                                   Y8P 888   888                888
 888    888                                       888   888                888
@@ -15,6 +17,7 @@ No warranty of suitability for any purpose, etc.; push requests welcome.
 1. Introduction ............................... |committed-introduction|
 2. Basics of Use .............................. |committed-basics|
 3. Configuration .............................. |committed-configuration|
+4. Status Line Support ........................ |committed-status-line|
 
 =============================================================================
 1. Introduction                                 *committed-introduction*
@@ -113,18 +116,18 @@ g:committed_symbol_true
         This symbol will be returned by committed#status_line_symbol
         when the current file exists in the commit list. If you do not 
         configure this value, the default will be used based on the setting of 
-        |g:committed_symbols_fancy|.
+        |g:committed_symbols_fancy|. Default: <+>
 >
-            let g:committed_symbol_true = "*"
+            let g:committed_symbol_true = "<+>"
 <
 g:committed_symbol_false
                                                 *g:committed_symbol_false*
         This symbol will be returned by committed#status_line_symbol
         when the current file does not exist in the commit list. If you do not 
         configure this value, the default will be used based on the setting of 
-        |g:committed_symbols_fancy|.
+        |g:committed_symbols_fancy|. Default: <->
 >
-            let g:committed_symbol_false = "-"
+            let g:committed_symbol_false = "<->"
 <
 g:committed_symbols_fancy
                                                 *g:committed_symbols_fancy*
@@ -134,5 +137,30 @@ g:committed_symbols_fancy
 >
             let g:committed_symbols_fancy = 1
 >
+
+=============================================================================
+4. Status Line Support                          *committed-status-line*
+
+Adding an indicator to your status line is a critical feature of this plug-in. 
+Without a status line indicator, you can't be sure whether the file you're 
+editing is in your commit list, or which commit list you're working with. Two 
+functions are provided to expose that information.
+
+committed#status_line_symbol()
+                                            *committed#status_line_symbol()*
+        As you might guess, this function returns the true/false symbol 
+        indicating whether the current file exists in the commit list.
+
+committed#status_line_filename()
+                                            *committed#status_line_filename()*
+        This function returns the current commit list's base name (i.e. 
+        without the .commit extension).
+
+You can simply calls these functions within your status line configuration, 
+or, if you are using a pure Vim status line plug-in like airline or Lightline, 
+use these functions within those configurations.
+
+For the Python version of Powerline, a Powerline segment is provided in the 
+plug-in bundle.
 
  vim:tw=78:et:ts=4:sw=4:ft=help:norl:
