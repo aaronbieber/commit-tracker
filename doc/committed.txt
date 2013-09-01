@@ -1,49 +1,139 @@
 
- .d8888b.				     d8b 888   888		  888 
-d88P  Y88b				     Y8P 888   888		  888 
-888    888					 888   888		  888 
-888	    .d88b. 88888b.d88b. 88888b.d88b. 888 888888.88888 .d88b.  .d88888 
-888	   d88''88b.88 '888 '88b.88 '888 '88b.88 888   888   d8P  Y8b.88' 888 
-888    888 888	888.88	888  888.88  888  888.88 888   888   88888888.88  888 
-Y88b  d88P Y88..88P.88	888  888.88  888  888.88 Y88b. Y88b. Y8b.    Y88b 888 
- 'Y8888P'   'Y88P' 888	888  888.88  888  888.88  'Y888 'Y888 'Y8888  'Y88888 
+ .d8888b.                    d8b 888   888        888
+d88P  Y88b                   Y8P 888   888        888
+888    888                   888   888        888
+888     .d88b. 88888b.d88b. 88888b.d88b. 888 888888.88888 .d88b.  .d88888
+888    d88''88b.88 '888 '88b.88 '888 '88b.88 888   888   d8P  Y8b.88' 888
+888    888 888  888.88  888  888.88  888  888.88 888   888   88888888.88  888
+Y88b  d88P Y88..88P.88  888  888.88  888  888.88 Y88b. Y88b. Y8b.    Y88b 888
+ 'Y8888P'   'Y88P' 888  888  888.88  888  888.88  'Y888 'Y888 'Y8888  'Y88888
 
 Version 1.0b
 Copyright (c) 2008-2013 Aaron Bieber
 Distributed under the same license as Vim itself.
 No warranty of suitability for any purpose, etc.; push requests welcome.
 
-1. Introduction ................................... |committed-introduction|
-2. Basics of Use .................................. |committed-basics|
-3. Configuration .................................. |committed-configuration|
+1. Introduction ............................... |committed-introduction|
+2. Basics of Use .............................. |committed-basics|
+3. Configuration .............................. |committed-configuration|
 
 =============================================================================
-1. Introduction					*committed-introduction*
+1. Introduction                                 *committed-introduction*
+
+Committed provides a basic set of tools for managing "commit lists," which are
+simply text files containing paths to files. The purpose of a commit list is
+to allow you to manipulate those files en masse using a monolithic VCS, such
+as SVN, without having to create branches. Committed is a very easy way to get
+a lot of the same type of functionality as git's staging area or Mercurial's
+mq extension, plus you can use the list of paths for anything within your
+shell.
 
 =============================================================================
-2. Basics of Use				*committed-basics*
+2. Basics of Use                                *committed-basics*
+
+The basic Committed workflow looks like this:
+
+    1. Open Vim and begin editing a file in your project.
+    2. This file should be a part of a single commit, so add it with
+       <Leader>la. You are prompted for the commit file name. If you enter
+       the name of an existing commit file, you can choose to append to it or
+       empty it. Let's assume you enter "my-changeset".
+    3. If you have added the Committed indicators to your status line, it
+       will show you that your file is in the list.
+    4. Edit another file. Add it to the list with <Leader>la.
+    5. Was the file not a part of this changeset? Remove it with
+       <Leader>lr.
+    6. Finally, you can use the commit list to commit all of your changes at
+       once. For example, in SVN:
+>
+       svn commit --targets ~/commits/my-changeset.commit -m "Made changes."
+<
+
+The following commands are available. Of course you can choose your own
+mappings if you wish:
+
+<Leader>la          Add the current file to the commit list. If no commit list
+                    configured in this Vim session yet, you will be prompted
+                    for a name. If the name given corresponds to an existing
+                    list, you will be prompted to abort, append to that list,
+                    or empty that list and start fresh.
+
+<Leader>lr          Remove the current file from the commit list. This only
+                    works if a commit list is configured for this session, and
+                    has no effect if the current file is not in the list.
+
+<Leader>ls          Show the commit list itself in a new pane. While in this
+                    commit list view, you can press <Escape> to close the
+                    pane, and <Enter> to open the file under the cursor. Paths
+                    in commit lists are always absolute to ensure that shell
+                    operations using them succeed as often as possible.
+
+<Leader>lg          Get an existing commit list. Use this when you want to set
+                    an existing list as the active commit list for your
+                    session without changing it (without adding the current
+                    file to it).
+
+<Leader>lu          Unset the commit list. This "releases" the commit list
+                    from the current session. It does not change the list file
+                    itself.
 
 =============================================================================
-3. Configuration				*committed-configuration*
+3. Configuration                                *committed-configuration*
 
-There are a few configuration variables you can set to customize your 
+There are a few configuration variables you can set to customize your
 environment.
 
 g:committed_file_path
-						*g:committed_file_path*
-		Set this variable to the location where you would like your 
-		commit files to be saved. OS path expansion is supported (any 
-		token that Vim's expand() function understands), so ~/ and 
-		$HOME should work. The default is ~/commits/.
+                                                *g:committed_file_path*
+        Set this variable to the location where you would like your
+        commit files to be saved. OS path expansion is supported (any
+        token that Vim's expand() function understands), so ~ works in
+        Linux-like OSes and $HOME should work on most systems.  The default
+        is ~/commits/.
+>
+            let g:committed_file_path = "~/commits/"
+            let g:committed_file_path = "c:/Users/fmulder/commits/"
+            let g:committed_file_path = "$HOME/fmulder/commits/"
+<
+g:committed_no_mappings
+                                                *g:committed_no_mappings*
+        Set this variable to 1 if you wish to map the keyboard commands
+        yourself. This will cause Committed to skip creating its own mappings.
+        Create your custom mappings like this:
+>
+            let g:committed_no_mappings = 1
 
+            nmap <Leader>la <Plug>CommittedAddFile
+            nmap <Leader>lr <Plug>CommittedRemoveFile
+            nmap <Leader>ls <Plug>CommittedShowCommitFile
+            nmap <Leader>lg <Plug>CommittedSetCommitFileName
+            nmap <Leader>lu <Plug>CommittedUnsetCommitFileName
+<
 g:committed_symbol_true
-						*g:committed_symbol_true*
-		This symbol will be returned by committed#status_line_symbol 
-		when the current file exists in the commit list.
-
+                                                *g:committed_symbol_true*
+        This symbol will be returned by committed#status_line_symbol
+        when the current file exists in the commit list. If you do not 
+        configure this value, the default will be used based on the setting of 
+        |g:committed_symbols_fancy|.
+>
+            let g:committed_symbol_true = "*"
+<
 g:committed_symbol_false
-						*g:committed_symbol_false*
-		This symbol will be returned by committed#status_line_symbol 
-		when the current file does not exist in the commit list.
+                                                *g:committed_symbol_false*
+        This symbol will be returned by committed#status_line_symbol
+        when the current file does not exist in the commit list. If you do not 
+        configure this value, the default will be used based on the setting of 
+        |g:committed_symbols_fancy|.
+>
+            let g:committed_symbol_false = "-"
+<
+g:committed_symbols_fancy
+                                                *g:committed_symbols_fancy*
+        Set this value to true to use Unicode symbols to indicate the current 
+        file's presence in the commit list. If set to false, ASCII characters 
+        will be used. Default is 1.
+>
+            let g:committed_symbols_fancy = 1
+>
 
-vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:et:ts=4:sw=4:ft=help:norl:
