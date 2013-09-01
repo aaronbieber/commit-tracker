@@ -35,13 +35,6 @@ if v:version < 700
   call s:warn("Build Commit File requires at least VIM 7.0.")
 endif
 
-" Default option values.
-let s:option_defaults = {
-  \ "committed_file_path"     : "~/commits",
-  \ "committed_symbols_fancy" : 0,
-  \ "committed_symbol_true"   : "✔",
-  \ "committed_symbol_false"  : "✘" }
-
 " Private script variables.
 let s:commit_file_entries = []
 let s:commit_filename_base = ""
@@ -287,6 +280,18 @@ function! s:activate_buffer() "{{{1
   endif
 endfunction
 " }}}
+
+" Default option values.
+let s:option_defaults = {
+  \ "committed_file_path"     : "~/commits",
+  \ "committed_symbols_fancy" : 0,
+  \ "committed_symbol_true"   : "✔",
+  \ "committed_symbol_false"  : "✘" }
+
+if(!s:get_option("committed_symbols_fancy"))
+  let s:option_defaults["committed_symbol_true"] = "<+>"
+  let s:option_defaults["committed_symbol_false"] = "<->"
+endif
 
 " Set up the publicly available mappings that users can map real keys to, if 
 " they wish to override the defaults.
