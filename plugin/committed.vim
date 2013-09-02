@@ -82,6 +82,7 @@ function! s:set_commit_filename(...) "{{{1
   if(!len(filename))
     " If a filename was not provided, return zero (failure to set a 
     " filename).
+    echo "No commit list name given; aborting."
     return 0
   else
     let s:commit_filename = filename . ".commit"
@@ -89,7 +90,12 @@ function! s:set_commit_filename(...) "{{{1
 
     " If the file is readable and writable, we can try to resume using 
     " that file.
-    if(filereadable(full_filename) && filewritable(full_filename))
+    if(len(glob(full_filename)))
+      if(!filereadable(full_filename) || !filewritable(full_filename))
+        call s:warn("The specified commit file already exists, but is not readable or writable!")
+        return 0
+      endif
+
       " File already exists!
       if(!nochange)
         call s:warn("This file already exists!")
@@ -155,7 +161,6 @@ function! s:add_file() "{{{1
   if(!len(s:commit_filename))
     let set_success = s:set_commit_filename()
     if(!set_success)
-      call s:warn("You can't add this file until the commit list is configured.")
       return
     endif
   endif
@@ -165,7 +170,6 @@ function! s:add_file() "{{{1
   let thisline = thisfile
 
   if(s:exists_in_commit_list(thisfile))
-    "let b:committed_list_contains_this_buffer = 1
     call s:warn("This file already exists in the commit list!")
     return
   endif
